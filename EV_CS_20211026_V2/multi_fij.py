@@ -16,8 +16,8 @@ import sympy
 from sympy import *
 from time import *
 from config import config
-from EV_Equilibrium_only_equal import EvEquilibrium
-from EV_CS_edit.single_xij_pure_math import check_Q
+from EV_Equilibrium import EvEquilibrium
+from single_xij import check_Q
 
 evEquilibrium = EvEquilibrium()
 

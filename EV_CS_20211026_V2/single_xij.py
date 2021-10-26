@@ -19,7 +19,7 @@ from pyomo.environ import *
 from sympy import *
 
 from config import config
-from EV_Equilibrium_only_equal import EvEquilibrium
+from EV_Equilibrium import EvEquilibrium
 
 evEquilibrium = EvEquilibrium()
 
