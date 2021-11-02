@@ -26,13 +26,13 @@ class Config:
         self.total_cs = 11
         self.total_regions = 11
 
-        self.region_num = 8 # 下层区域的数量
-        self.cs_num = 6  # 充电站的数量
+        self.region_num = 6 # 下层区域的数量
+        self.cs_num = 4  # 充电站的数量
         # 初始化
         self.total_price = np.array([3, 0, 6, 8, 1, 65, 68, 74, 85, 48, 58])
-        self.total_vehicle_vector = np.zeros(self.region_num, dtype=np.int32)
+        self.total_vehicle_vector = np.zeros(self.region_num, dtype=np.float64)
         self.region_id = [i for i in range(self.region_num)]
-        self.total_dist_vector = np.zeros((self.cs_num, self.region_num), dtype=np.int32)
+        self.total_dist_vector = np.zeros((self.cs_num, self.region_num), dtype=np.float64)
         self.cs_cost_vector = np.array([200, 120, 150, 300, 244, 156, 222, 234, 69, 102, 300])
         self.cs_service_capacity_vector = np.array([10, 34, 12, 25, 67, 35, 55, 45, 67, 10, 55])
 

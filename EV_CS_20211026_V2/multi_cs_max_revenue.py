@@ -11,6 +11,7 @@
 
 import collections
 import copy
+import math
 import re as regular
 import numpy as np
 import sympy
@@ -319,12 +320,12 @@ def get_next_jump_p(dist, vehicle_num, copy_price, expression_dict, fij_symbol_l
     for item in points_dict.items():
         if item[1][0] != []:  # 首先不能为空
             # 待选值是小数，['129.xx']形式
-            float_item = float(item[1][0]) # 先转为float类型
+            float_item = round(float(item[1][0]), 3) # 先转为float类型
             if float_item > copy_price[change_cs]:  # 首先大于当前跳跃点
                 head = min_p.popleft()
                 head_fij = min_P_fij.popleft()
                 # 判断最小的head的情况
-                float_head = float(head)
+                float_head = round(float(head), 3)
                 if float_head == 0:
                     min_p.append(item[1][0])
                     min_P_fij.append(item[0])
@@ -367,9 +368,9 @@ def get_next_jump_p(dist, vehicle_num, copy_price, expression_dict, fij_symbol_l
         last_p = last_min_p_queue.popleft()
         last_p_fij = last_min_p_fij_queue.popleft()
 
-        int_now_p = float(now_p)
-        int_last_p = float(last_p)
-        if int_now_p == int_last_p:
+        float_now_p = round(float(now_p), 3)
+        float_last_p = round(float(last_p), 3)
+        if float_now_p == float_last_p:
             p_equal_flag = True
         else:
             p_equal_flag = False
@@ -390,7 +391,7 @@ def get_next_jump_p(dist, vehicle_num, copy_price, expression_dict, fij_symbol_l
     head_p = min_p.popleft()
     head_p_fij = min_P_fij.popleft()
 
-    float_head = float(head_p)
+    float_head = round(float(head_p), 3)
     if float_head == 0 or float_head > p_max:
         # logging.debug("当前所求跳跃点为整数且值大于p_max或者等于0，返回0，以及结束标志")
         end_flag = False
@@ -455,31 +456,31 @@ def get_all_cs_max_revenue(dist, region_num, cs_num, priceIndex, vehicle_num, ju
     list_dRoots = list(dRoots)  # 表示成list方便处理
     # print(list_dRoots)
 
-    if '/' in str(list_dRoots[0]):
-        nums_arr = list(regular.findall(r'-?\d+', str(list_dRoots[0])))  # 提取分数中的数字
-        list_value = round(int(nums_arr[0]) / int(nums_arr[1]), 3)
-        if list_value > pleft and list_value < pright:  # 如果极值点在区间内
-            p_ = list_value
-        else:  # 如果极值点不在区间内，带入求两端的值比较大小
-            PQ_left = all_cs_pq_expression.subs(jp, pleft)
-            PQ_right = all_cs_pq_expression.subs(jp, pright)
-            if PQ_left > PQ_right:
-                p_ = pleft
-            elif PQ_right > PQ_left:
-                p_ = pright
-        all_cs_revenue = all_cs_pq_expression.subs(jp, p_)
-    else:  # 如果不是分数
-        int_value = int(list_dRoots[0])
-        if int_value > pleft and int_value < pright:  # 如果极值点在区间内
-            p_ = int_value
-        else:  # 如果极值点不在区间内，带入求两端的值
-            PQ_left = all_cs_pq_expression.subs(jp, pleft)
-            PQ_right = all_cs_pq_expression.subs(jp, pright)
-            if PQ_left > PQ_right:
-                p_ = pleft
-            elif PQ_right > PQ_left:
-                p_ = pright
-        all_cs_revenue = all_cs_pq_expression.subs(jp, p_)
+    # if '/' in str(list_dRoots[0]):
+    #     nums_arr = list(regular.findall(r'-?\d+', str(list_dRoots[0])))  # 提取分数中的数字
+    #     list_value = round(int(nums_arr[0]) / int(nums_arr[1]), 3)
+    #     if list_value > pleft and list_value < pright:  # 如果极值点在区间内
+    #         p_ = list_value
+    #     else:  # 如果极值点不在区间内，带入求两端的值比较大小
+    #         PQ_left = all_cs_pq_expression.subs(jp, pleft)
+    #         PQ_right = all_cs_pq_expression.subs(jp, pright)
+    #         if PQ_left > PQ_right:
+    #             p_ = pleft
+    #         elif PQ_right > PQ_left:
+    #             p_ = pright
+    #     all_cs_revenue = all_cs_pq_expression.subs(jp, p_)
+    # else:  # 如果不是分数
+    float_value = float(list_dRoots[0])
+    if float_value > pleft and float_value < pright:  # 如果极值点在区间内
+        p_ = float_value
+    else:  # 如果极值点不在区间内，带入求两端的值
+        PQ_left = all_cs_pq_expression.subs(jp, pleft)
+        PQ_right = all_cs_pq_expression.subs(jp, pright)
+        if PQ_left > PQ_right:
+            p_ = pleft
+        elif PQ_right > PQ_left:
+            p_ = pright
+    all_cs_revenue = all_cs_pq_expression.subs(jp, p_)
 
     anss = ans_each_jump_step[price_section_index - 1]  # 得到fij以及lamuda关于p的线性表示
     for item in anss.items():
@@ -584,8 +585,9 @@ def get_all_cs_optimal_p(dist, region_num, cs_num, priceIndex, vehicle_num, jump
                 new_strategy[i][j] = vehicle_num[i] * new_strategy[i][j]
 
         if signal:
+
             minus = np.array(new_strategy) - np.array(fij_)
-            if np.any(minus-2 <= 0):
+            if np.all(minus-2 <= 0):
                 print("迭代得到的底层策略： ", new_strategy)
                 print("跳跃点方法得到的底层策略：", fij_)
             else:
@@ -642,7 +644,7 @@ def get_single_cs_optimal_p_under_all_cs_max_revenue(price, cs, region, dist, ve
         start_flag： 是否是第一轮迭代的第一个cs
     """
     change_cs = cs  # 当前求解最优p的充电站索引
-    print("\n当前充电站索引：", change_cs)
+    print("\n待求解充电站索引：", change_cs)
     copy_price = copy.deepcopy(price)  # 价格的copy，防止运算过程中被修改
     region_num = region_num
     cs_num = cs_num
@@ -663,7 +665,7 @@ def get_single_cs_optimal_p_under_all_cs_max_revenue(price, cs, region, dist, ve
     last_min_p_fij_queue = collections.deque()  # 记录上一轮跳跃点变化的fij
     state_dict = {}  # 记录fij的状态, 1:fij>0, 2:fij=0
 
-    print("当前充电站的定价为：", copy_price)
+    print("求解前充电站的定价为：", copy_price)
 
     if start_flag:  # 如果是第一轮迭代的第一个cs，依靠第三库求解的下层均衡确认fij的情况
         copy_price[change_cs] = 0
@@ -805,7 +807,7 @@ if __name__ == "__main__":
     last_cs_optimal_p_list = [-1 for i in range(cs_num)]  # 记录上一轮各充电站的价格
     last_cs_optimal_p_list = np.array(last_cs_optimal_p_list)
     final_revenue_list = [0 for i in range(cs_num)]  # 各个cs最终的收益列表
-    price = [1000 for i in range(cs_num)]
+    price = [1000.0 for i in range(cs_num)]
     # price = [100, 190, 456, 345, 563, 532, 222, 444, 567, 234]
     list_price = copy.deepcopy(price)
     price = np.array(price)
@@ -864,7 +866,7 @@ if __name__ == "__main__":
             successful_flag = False
             break
         solve_num += 1
-        print("更新后各充电站的价格为: ", price)
+        print("\n一轮更新后，各充电站的定价: ", price)
     if successful_flag:
         print("找到均衡啦！")
         print("最终各充电站定价：%s", price)
