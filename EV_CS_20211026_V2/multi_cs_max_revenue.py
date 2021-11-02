@@ -1,12 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 '''
-@Project ：EV_CS
-@File    ：multi_xij.py
+@Project ：EV_CS_20211026_V2 
+@File    ：multi_cs_max_revenue.py
 @Author  ：xxuanZhu
-@Date    ：2021/6/11 16:08
-@Purpose : 利用跳跃点+BCD，求多个充电站的最优定价
+@Date    ：2021/10/27 9:37 
+@Purpose :
 '''
+
 
 import collections
 import copy
@@ -41,7 +42,8 @@ def check_if_conflict(expression_dict, lamuda_symbol_list, state_dict, copy_pric
     # 提取跳跃点
     for item in ans.items():
         if item[0] not in lamuda_symbol_list:  # 不提取lamuda的表示
-            linear_expression_dict[item[0]] = str(solve([item[1] < 0, p - copy_price[change_cs] > 0]))  # 提取时该区间要先大于当前充电站的价格
+            linear_expression_dict[item[0]] = str(
+                solve([item[1] < 0, p - copy_price[change_cs] > 0]))  # 提取时该区间要先大于当前充电站的价格
 
     for item in linear_expression_dict.items():
         if item[0] not in lamuda_symbol_list and item[1] != "False":  # 只提取不为空集的fij
@@ -58,12 +60,13 @@ def check_if_conflict(expression_dict, lamuda_symbol_list, state_dict, copy_pric
                         list_item = list(item)  # 将待选值转为list，好进行除法操作
                         nums_arr = regular.findall(r'-?\d+', list_item[1][0])  # 提取分数中的数字
                         item = tuple(list_item)
-                        if round(int(nums_arr[0]) / int(nums_arr[1])) == copy_price[change_cs]: # 相等，只可能是小于0的区间在copy_price[]的左边，因此矛盾
+                        if round(int(nums_arr[0]) / int(nums_arr[1])) == copy_price[
+                            change_cs]:  # 相等，只可能是小于0的区间在copy_price[]的左边，因此矛盾
                             return True
                     else:  # 如果不是分数
-                        if copy_price[change_cs] == int(item[1][0]): # 相等，只可能是小于0的区间在copy_price[]的左边，因此矛盾
+                        if copy_price[change_cs] == int(item[1][0]):  # 相等，只可能是小于0的区间在copy_price[]的左边，因此矛盾
                             return True
-                if len(item[1]) == 2: # 如果是一个区间
+                if len(item[1]) == 2:  # 如果是一个区间
                     if '/' in str(item[1][0]) and '/' in str(item[1][1]):
                         nums_left = regular.findall(r'-?\d+', str(item[1][0]))
                         res_left = round(int(nums_left[0]) / int(nums_left[1]))
@@ -91,10 +94,12 @@ def check_if_conflict(expression_dict, lamuda_symbol_list, state_dict, copy_pric
     return False
 
 
-def get_next_jump_p( dist, vehicle_num, copy_price, expression_dict, fij_symbol_list, q_symbol_list, lamuda_symbol_list, jump_point_list,
-                     price_section_index, lower_0_flag, last_lower_0_flag,  last_min_p_queue,
-                     last_min_p_fij_queue, state_dict,  p_equal_flag, jp, strategy,  change_cs, p_max, ans_each_jump_step, q_each_jump_step,
-                     region_num, cs_num, end_flag, start_flag):
+def get_next_jump_p(dist, vehicle_num, copy_price, expression_dict, fij_symbol_list, q_symbol_list, lamuda_symbol_list,
+                    jump_point_list,
+                    price_section_index, lower_0_flag, last_lower_0_flag, last_min_p_queue,
+                    last_min_p_fij_queue, state_dict, p_equal_flag, jp, strategy, change_cs, p_max, ans_each_jump_step,
+                    q_each_jump_step,
+                    region_num, cs_num, end_flag, start_flag):
     """
     :param dist: 区域到充电站的距离
     :param vehicle_num: 每个区域的车辆数
@@ -148,7 +153,7 @@ def get_next_jump_p( dist, vehicle_num, copy_price, expression_dict, fij_symbol_
     else:  # 如果不是，则通过上轮解出来的跳跃点情况进行方程组的操作
         copy_last_min_p_fij_queue = last_min_p_fij_queue.copy()
         if len(copy_last_min_p_fij_queue) == 1:  # 发生变化的fij只有1个
-            head_fij = copy_last_min_p_fij_queue.popleft() # 拿到上一轮变化的fij
+            head_fij = copy_last_min_p_fij_queue.popleft()  # 拿到上一轮变化的fij
             if p_equal_flag:  # 如果出现了跳跃点波动的情况
                 if str(head_fij)[0] == 'f':  # 如果是因为fij从大于0变成等于0引起的波动
                     expr_f = str(head_fij)[1] + str(head_fij)[2]
@@ -174,10 +179,12 @@ def get_next_jump_p( dist, vehicle_num, copy_price, expression_dict, fij_symbol_
                     int_j = int(head_fij[1])
                     expr_f = str(int_i) + str(int_j)
                     if int(int_j) == change_cs:
-                        expression_dict[expr_f] = jp + q_symbol_list[int_j] + dist[int_j][int_i] + fij_symbol_list[int_i][int_j] - lamuda_symbol_list[int_i]
+                        expression_dict[expr_f] = (config.weight_price * jp) + (config.weight_queue * q_symbol_list[int_j]) + (config.weight_dist * dist[int_j][int_i]) + \
+                                                 (config.weight_queue * fij_symbol_list[int_i][int_j]) - lamuda_symbol_list[int_i]
 
                     else:
-                        expression_dict[expr_f] = copy_price[int_j] + q_symbol_list[int_j] + dist[int_j][int_i] + fij_symbol_list[int_i][int_j] - lamuda_symbol_list[int_i]
+                        expression_dict[expr_f] = (config.weight_price * copy_price[int_j]) + (config.weight_queue * q_symbol_list[int_j]) + (config.weight_dist * dist[int_j][int_i]) + \
+                                                  (config.weight_queue * fij_symbol_list[int_i][int_j]) - lamuda_symbol_list[int_i]
 
                     state_dict[fij_symbol_list[int_i][int_j]] = 1
         else:  # 发生变化的fij有多个，需要判断是否有存在矛盾的fij
@@ -185,7 +192,7 @@ def get_next_jump_p( dist, vehicle_num, copy_price, expression_dict, fij_symbol_
             while copy_last_min_p_fij_queue:
                 copy_expression_dict = copy.deepcopy(expression_dict)  # 保存上一轮的方程组
                 head_fij = copy_last_min_p_fij_queue.popleft()  # fij
-                if p_equal_flag: # 如果出现了跳跃点波动的情况
+                if p_equal_flag:  # 如果出现了跳跃点波动的情况
                     if str(head_fij)[0] == 'f':  # 如果是因为fij从大于0变成等于0引起的波动
                         expr_f = str(head_fij)[1] + str(head_fij)[2]
                         int_i = int(str(head_fij)[1])
@@ -196,8 +203,15 @@ def get_next_jump_p( dist, vehicle_num, copy_price, expression_dict, fij_symbol_
                         int_i = int(head_fij[0])
                         int_j = int(head_fij[1])
                         expr_f = str(int_i) + str(int_j)
-                        expression_dict[expr_f] = fij_symbol_list[int_i][int_j]
-                        state_dict[fij_symbol_list[int_i][int_j]] = 2
+                        if int(int_j) == change_cs:
+                            expression_dict[expr_f] = (config.weight_price * jp) + (config.weight_queue * q_symbol_list[int_j]) + (config.weight_dist * dist[int_j][int_i]) + \
+                                                  (config.weight_queue * fij_symbol_list[int_i][int_j]) - lamuda_symbol_list[int_i]
+
+                        else:
+                            expression_dict[expr_f] = (config.weight_price * copy_price[int_j]) + (config.weight_queue * q_symbol_list[int_j]) + (config.weight_dist * dist[int_j][int_i]) + \
+                                                  (config.weight_queue * fij_symbol_list[int_i][int_j]) - lamuda_symbol_list[int_i]
+                        # expression_dict[expr_f] = fij_symbol_list[int_i][int_j]
+                        state_dict[fij_symbol_list[int_i][int_j]] = 1
                 else:  # 没有出现波动，正常处理方程组
                     if str(head_fij)[0] == 'f':  # # 如果因为fij变化，说明此轮fij会从大于0变成等于0，需要去掉该方程
                         expr_f = str(head_fij)[1] + str(head_fij)[2]
@@ -210,32 +224,23 @@ def get_next_jump_p( dist, vehicle_num, copy_price, expression_dict, fij_symbol_
                         int_j = int(head_fij[1])
                         expr_f = str(int_i) + str(int_j)
                         if int(int_j) == change_cs:
-                            expression_dict[expr_f] = jp + q_symbol_list[int_j] + dist[int_j][int_i] + fij_symbol_list[int_i][int_j] - lamuda_symbol_list[int_i]
+                            expression_dict[expr_f] = (config.weight_price * jp) + (config.weight_queue * q_symbol_list[int_j]) + (config.weight_dist * dist[int_j][int_i]) + \
+                                                  (config.weight_queue * fij_symbol_list[int_i][int_j]) - lamuda_symbol_list[int_i]
 
                         else:
-                            expression_dict[expr_f] = copy_price[int_j] + q_symbol_list[int_j] + dist[int_j][int_i] + fij_symbol_list[int_i][int_j]  - lamuda_symbol_list[int_i]
+                            expression_dict[expr_f] = (config.weight_price * copy_price[int_j]) + (config.weight_queue * q_symbol_list[int_j]) + (config.weight_dist * dist[int_j][int_i]) + \
+                                                  (config.weight_queue * fij_symbol_list[int_i][int_j]) - lamuda_symbol_list[int_i]
 
                         state_dict[fij_symbol_list[int_i][int_j]] = 1
 
                         # 加入后检查是否存在矛盾
-                        if check_if_conflict(expression_dict,  lamuda_symbol_list, state_dict, copy_price, jp, change_cs,head_fij):
+                        if check_if_conflict(expression_dict, lamuda_symbol_list, state_dict, copy_price, jp, change_cs,
+                                             head_fij):
                             expression_dict = copy.deepcopy(copy_expression_dict)
                             state_dict[fij_symbol_list[int_i][int_j]] = 2
                         else:
                             print("f", int_i, int_j, "没有矛盾")
 
-    # ans = solve(expression_dict.values(),
-    #             # (fij_symbol_list[i][j] for j in range(cs_num) for i in range(region_num)), (lamuda_symbol_list[i] for i in range(region_num)),
-    #             fij_symbol_list[0][0], fij_symbol_list[0][1], fij_symbol_list[0][2], fij_symbol_list[0][3],
-    #             fij_symbol_list[1][0], fij_symbol_list[1][1], fij_symbol_list[1][2], fij_symbol_list[1][3],
-    #             fij_symbol_list[2][0], fij_symbol_list[2][1], fij_symbol_list[2][2], fij_symbol_list[2][3],
-    #             fij_symbol_list[3][0], fij_symbol_list[3][1], fij_symbol_list[3][2], fij_symbol_list[3][3],
-    #             fij_symbol_list[4][0], fij_symbol_list[4][1], fij_symbol_list[4][2], fij_symbol_list[4][3],
-    #             fij_symbol_list[5][0], fij_symbol_list[5][1], fij_symbol_list[5][2], fij_symbol_list[5][3],
-    #             lamuda_symbol_list[0], lamuda_symbol_list[1], lamuda_symbol_list[2], lamuda_symbol_list[3],
-    #             lamuda_symbol_list[4], lamuda_symbol_list[5],
-    #             jp
-    #             )
 
     # zhx重构，solve的第二个参数是动态传参，可以打包成列表传进去
     arg_list_1 = [fij_symbol_list[i][j] for j in range(cs_num) for i in range(region_num)]
@@ -255,12 +260,7 @@ def get_next_jump_p( dist, vehicle_num, copy_price, expression_dict, fij_symbol_
         if item[0] not in lamuda_symbol_list and item[1] != 0:  # 只提取不为0的fij
             if 'jp' in str(item[1]):
                 ans_item0 = str(solve([item[1] < 0]))
-                if '/' in ans_item0:
-                    points_dict[item[0]] = list(regular.findall(r'(-?\d+/-?\d+)', ans_item0))
-                else:
-                    points_dict[item[0]] = list(regular.findall(r'(-?\d+)', ans_item0))
-
-
+                points_dict[item[0]] = list(regular.findall(r"-?\d+\.?\d*e??\d*?", ans_item0))
 
     for item in state_dict.items():
         if item[1] == 2:  # 说明存在当前为负的值
@@ -296,20 +296,13 @@ def get_next_jump_p( dist, vehicle_num, copy_price, expression_dict, fij_symbol_
             for j in range(cs_num):
                 if ans[fij_symbol_list[i][j]] == 0:  # xij流量为0,且正好是此fij导致跳跃点振荡的情况，跳过此轮求解
                     if fluctuate_i_j != [] and i == fluctuate_i_j[0] and j == fluctuate_i_j[1]:
-                         continue
+                        continue
                     else:
                         fij_name = str(i) + str(j)
                         if j == change_cs:
-                            expr = jp + q_symbol_list[j] + dist[j][i] - ans[lamuda_symbol_list[i]]
+                            expr = ((config.weight_price * jp) + (config.weight_queue * q_symbol_list[j]) + (config.weight_dist * dist[j][i]) - ans[lamuda_symbol_list[i]]) / config.weight_queue
                         elif j != change_cs:
-                            expr = copy_price[j] + q_symbol_list[j] + dist[j][i] - ans[lamuda_symbol_list[i]]
-                        # for k in range(config.region_num):  # 求解 qj+dij+p = lamudi_i
-
-                        #     fij_name = str(i) + str(j) + str(k)  # ijx(x表示lamubai）
-                        #     if j != change_cs:
-                        # expr = jp + q_symbol_list[j] + dist[j][i] - ans[lamuda_symbol_list[k]]
-                        # else:
-                        #     expr =
+                            expr = ((config.weight_price * copy_price[j]) + (config.weight_queue * q_symbol_list[j]) + (config.weight_dist * dist[j][i]) - ans[lamuda_symbol_list[i]]) / config.weight_queue
                         ineq_expression_dict[fij_name] = expr
 
         # 把fij何时等于0的点解出来
@@ -317,105 +310,42 @@ def get_next_jump_p( dist, vehicle_num, copy_price, expression_dict, fij_symbol_
             if 'jp' in str(item[1]):  # 这个地方说明是有些fij规定为某个值，不随p变化
                 points_dict[item[0]] = list([str(solve(item[1])[0])])
 
-    # 开始比较大小
+    # 开始比较大小，找到最小值
     min_P_fij = collections.deque()
     min_P_fij.append(0)
     min_p = collections.deque()
     min_p.append(0)
 
-    for item in points_dict.items():  # 有两种情况，分别是['-445']+['6789/4']
+    for item in points_dict.items():
         if item[1][0] != []:  # 首先不能为空
-            if '/' in item[1][0]:  # 如果待选值是分数，形式是['6789/4']
-                list_item = list(item)  # 将待选值转为list，利于进行除法操作
-                nums_arr = regular.findall(r'-?\d+', list_item[1][0])  # 提取分数中的数字
-                item = tuple(list_item)  # 再从list转回去
-                list_value = round(int(nums_arr[0]) / int(nums_arr[1]), 3)
-                if list_value > copy_price[change_cs]:  # 待选值要大于当前的跳跃点
-                    head = min_p.popleft()
-                    head_fij = min_P_fij.popleft()
-                    if '/' in str(head):  # 如果最小的值也是分数形式
-                        nums_arr_head = regular.findall(r'-?\d+', str(head))
-                        res_head = round(int(nums_arr_head[0]) / int(nums_arr_head[1]), 3)
-                        if res_head == list_value:  # 相等将head和待选值都放进去
-                            min_p.append(head)
-                            min_P_fij.append(head_fij)
-                            min_p.append(item[1][0])
-                            min_P_fij.append(item[0])
-                        elif res_head > list_value:
-                            while min_p:  # 看看是不是有多个fij在此p发生变化，如果是，则全部pop出来
-                                min_p.popleft()
-                                min_P_fij.popleft()
-                            min_p.append(item[1][0])  # 加入更新的值
-                            min_P_fij.append(item[0])
-                        elif res_head < list_value:
-                            min_p.append(head)
-                            min_P_fij.append(head_fij)
-                    else:  # 最小值不是分数形式，是['245']这种形式
-                        int_head = int(head)  # 先转为int型
-                        if int_head == 0:
-                            min_p.append(item[1][0])
-                            min_P_fij.append(item[0])
-                        elif int_head  == list_value:
-                            min_p.append(head)
-                            min_P_fij.append(head_fij)
-                            min_p.append(item[1][0])
-                            min_P_fij.append(item[0])
-                        elif int_head > list_value:
-                            while min_p:  # 看看是不是有多个fij在此p发生变化，如果是，则全部pop出来
-                                min_p.popleft()
-                                min_P_fij.popleft()
-                            min_p.append(item[1][0])  # 加入更新的值
-                            min_P_fij.append(item[0])
-                        elif int_head < list_value:
-                            min_p.append(head)
-                            min_P_fij.append(head_fij)
-            else: # 待选值是整数，['345']形式
-                int_item = int(item[1][0])  # 先转为int型
-                if int_item > copy_price[change_cs]:  # 首先大于当前跳跃点
-                    head = min_p.popleft()
-                    head_fij = min_P_fij.popleft()
-                    if '/' in str(head):  # 如果最小的head是分数形式
-                        nums_arr_head = regular.findall(r'-?\d+', str(head))
-                        res_head = round(int(nums_arr_head[0]) / int(nums_arr_head[1]), 3)
-                        if res_head == int_item:  # 相等将head和待选值都放进去
-                            min_p.append(head)
-                            min_P_fij.append(head_fij)
-                            min_p.append(item[1][0])
-                            min_P_fij.append(item[0])
-                        elif res_head > int_item:
-                            while min_p:  # 看看是不是有多个fij在此p发生变化，如果是，则全部pop出来
-                                min_p.popleft()
-                                min_P_fij.popleft()
-                            min_p.append(item[1][0])  # 加入更新的值
-                            min_P_fij.append(item[0])
-                        elif res_head < int_item:
-                            min_p.append(head)
-                            min_P_fij.append(head_fij)
-                    else:  # 都是整数
-                        int_head = int(head)
-                        if int_head == 0:
-                            min_p.append(item[1][0])
-                            min_P_fij.append(item[0])
-                        elif int_head == int_item:
-                            min_p.append(head)
-                            min_P_fij.append(head_fij)
-                            min_p.append(item[1][0])
-                            min_P_fij.append(item[0])
-                        elif int_head > int_item:
-                            while min_p:  # 说明不止一个head相同
-                                min_p.popleft()
-                                min_P_fij.popleft()
-                            min_p.append(item[1][0])
-                            min_P_fij.append(item[0])
-                        elif int_head < int_item:
-                            min_p.append(head)
-                            min_P_fij.append(head_fij)
+            # 待选值是小数，['129.xx']形式
+            float_item = float(item[1][0]) # 先转为float类型
+            if float_item > copy_price[change_cs]:  # 首先大于当前跳跃点
+                head = min_p.popleft()
+                head_fij = min_P_fij.popleft()
+                # 判断最小的head的情况
+                float_head = float(head)
+                if float_head == 0:
+                    min_p.append(item[1][0])
+                    min_P_fij.append(item[0])
+                elif float_head == float_item:
+                    min_p.append(head)
+                    min_P_fij.append(head_fij)
+                    min_p.append(item[1][0])
+                    min_P_fij.append(item[0])
+                elif float_head > float_item:
+                    while min_p:  # 说明不止一个head相同
+                        min_p.popleft()
+                        min_P_fij.popleft()
+                    min_p.append(item[1][0])
+                    min_P_fij.append(item[0])
+                elif float_head < float_item:
+                    min_p.append(head)
+                    min_P_fij.append(head_fij)
 
 
-
-    print("跳跃点为：", min_p)
-    print("跳跃点发生变化的fij是：", min_P_fij)
-
+    print("\n跳跃点：", min_p)
+    print("跳跃点发生变化的fij：", min_P_fij)
 
     if lower_0_flag == False:  # 如果是False，将Q表示成关于p的函数
         for j in range(cs_num):  # 将qj表示成关于p的形式
@@ -429,50 +359,29 @@ def get_next_jump_p( dist, vehicle_num, copy_price, expression_dict, fij_symbol_
     if check_Q(jump_point_list, price_section_index, change_cs, q_each_jump_step, jp):  # 如果该跳跃点小于0，加入后停止寻找
         end_flag = False
 
+    # 先检查是否和上个跳跃点一样, 一样的话剔除掉上一轮，留下这轮的跳跃点
 
-    # 先检查是否和上个跳跃点一样, 一样说明发生振荡
     if price_section_index != 1:
         now_p = min_p.popleft()
         now_p_fij = min_P_fij.popleft()
         last_p = last_min_p_queue.popleft()
         last_p_fij = last_min_p_fij_queue.popleft()
-        if '/' in str(now_p) and '/' in str(last_p):  # 俩都是分数
-            nums_now_head = regular.findall(r'-?\d+', str(now_p))
-            res_now_head = round(int(nums_now_head[0]) / int(nums_now_head[1]), 3)
-            nums_last_head = regular.findall(r'-?\d+', str(last_p))
-            res_last_head = round(int(nums_last_head[0]) / int(nums_last_head[1]), 3)
-            if abs(res_now_head - res_last_head) < 1e-6:
-                p_equal_flag = True
-            else:
-                p_equal_flag = False
-        elif '/' not in str(now_p) and '/' not in str(last_p):  # 俩都是整数
-            int_now_p = int(now_p)
-            int_last_p = int(last_p)
-            if int_now_p == int_last_p:
-                p_equal_flag = True
-            else:
-                p_equal_flag = False
-        elif '/' in str(now_p) and '/' not in str(last_p):
-            nums_now_head = regular.findall(r'-?\d+', str(now_p))
-            res_now_head = round(int(nums_now_head[0]) / int(nums_now_head[1]), 3)
-            int_last_p = int(last_p)
-            if res_now_head == int_last_p:
-                p_equal_flag = True
-            else:
-                p_equal_flag = False
-        elif '/' not in str(now_p) and '/' in str(last_p):
-            nums_last_head = regular.findall(r'-?\d+', str(last_p))
-            res_last_head = round(int(nums_last_head[0]) / int(nums_last_head[1]), 3)
-            int_now_p = int(now_p)
-            if res_last_head == int_now_p:
-                p_equal_flag = True
-            else:
-                p_equal_flag = False
+
+        int_now_p = float(now_p)
+        int_last_p = float(last_p)
+        if int_now_p == int_last_p:
+            p_equal_flag = True
+        else:
+            p_equal_flag = False
+
 
         min_p.append(now_p)
         min_P_fij.append(now_p_fij)
         last_min_p_queue.append(last_p)
         last_min_p_fij_queue.append(last_p_fij)
+
+
+
 
     # 保存这轮最终找出的跳跃点
     last_min_p_queue = min_p.copy()
@@ -480,73 +389,71 @@ def get_next_jump_p( dist, vehicle_num, copy_price, expression_dict, fij_symbol_
 
     head_p = min_p.popleft()
     head_p_fij = min_P_fij.popleft()
-    if '/' in str(head_p):  # 如果确定的跳跃点是分数
-        nums_arr_head = regular.findall(r'-?\d+', str(head_p))
-        res_head = round(int(nums_arr_head[0]) / int(nums_arr_head[1]), 3)
-        if res_head > p_max:
-            end_flag = False
-            return 0, last_lower_0_flag, last_min_p_queue, last_min_p_fij_queue, expression_dict, p_equal_flag, end_flag, start_flag
-        print("最终加入的值为：", res_head)
-        jump_point_list.append(res_head)
-    else:  # =如果确定的跳跃点是整数
-        int_head = int(head_p)
-        if int_head == 0 or int_head > p_max:
-            # logging.debug("当前所求跳跃点为整数且值大于p_max或者等于0，返回0，以及结束标志")
-            end_flag = False
-            return 0, last_lower_0_flag, last_min_p_queue, last_min_p_fij_queue, expression_dict, p_equal_flag, end_flag, start_flag
-            # logging.debug("当前所求跳跃点为分数且值小于p_max")
-        print("最终加入的值为：", int_head)
-        jump_point_list.append(int_head)
+
+    float_head = float(head_p)
+    if float_head == 0 or float_head > p_max:
+        # logging.debug("当前所求跳跃点为整数且值大于p_max或者等于0，返回0，以及结束标志")
+        end_flag = False
+        return 0, last_lower_0_flag, last_min_p_queue, last_min_p_fij_queue, expression_dict, p_equal_flag, end_flag, start_flag, price_section_index
+        # logging.debug("当前所求跳跃点为分数且值小于p_max")
+    print("最终加入的值：", float_head)
+    jump_point_list.append(float_head)
 
 
     copy_price[change_cs] = jump_point_list[price_section_index]  # 把新确定cs的值更新，以确保下一轮的跳跃点首先大于此值
     last_lower_0_flag = lower_0_flag
 
-    return jump_point_list[price_section_index], last_lower_0_flag,  last_min_p_queue, last_min_p_fij_queue, expression_dict, p_equal_flag, end_flag, start_flag
+    return jump_point_list[
+               price_section_index], last_lower_0_flag, last_min_p_queue, last_min_p_fij_queue, expression_dict, p_equal_flag, end_flag, start_flag, price_section_index
 
 
-
-
-def get_max_revenue(dist, region_num, cs_num, priceIndex, vehicle_num, jump_point_list,
-                    price_section_index, change_cs, ans_each_jump_step, q_each_jump_step, jp):
+def get_all_cs_max_revenue(dist, region_num, cs_num, priceIndex, vehicle_num, jump_point_list,
+                           price_section_index, change_cs, ans_each_jump_step, q_each_jump_step, jp, copy_price):
     """
-    :param dist: m*n, 距离数组
-    :param region_num: 区域数量
-    :param cs_num: 充电站数量
-    :param priceIndex: 控制priceIndex个桩
-    :param coppy_price:
-    :param vehicle_num:
-    :param jump_point_list: 求得的跳跃点区间
-    :param price_section_index: 跳跃点区间的索引
-    :param change_cs: 要求最优p的cs的索引
-    :param ans_each_jump_step: 每个区间内fij，lamuda，q关于p的表示
-    :param q_each_jump_step: 每个区间内q关于p的表示
-    :param jp: 价格p
-    :return:
-        round(revenue_, 3)：某区间最优收益
-        round(p_, 3)：某区间最优收益对应的定价
-        fij_：某区间最优收益对应的fij
-        lamuda_：某区间最优收益对应的lamuda
-        q_：某区间最优收益对应的q
-    """
-    pleft = jump_point_list[price_section_index-1]  # 区间左端点
+        :param dist: m*n, 距离数组
+        :param region_num: 区域数量
+        :param cs_num: 充电站数量
+        :param priceIndex: 控制priceIndex个桩
+        :param coppy_price:
+        :param vehicle_num:
+        :param jump_point_list: 求得的跳跃点区间
+        :param price_section_index: 跳跃点区间的索引
+        :param change_cs: 要求最优p的cs的索引
+        :param ans_each_jump_step: 每个区间内fij，lamuda，q关于p的表示
+        :param q_each_jump_step: 每个区间内q关于p的表示
+        :param jp: 价格p
+        :return:
+            round(revenue_, 3)：某区间最优收益
+            round(p_, 3)：某区间最优收益对应的定价
+            fij_：某区间最优收益对应的fij
+            lamuda_：某区间最优收益对应的lamuda
+            q_：某区间最优收益对应的q
+        """
+    pleft = jump_point_list[price_section_index - 1]  # 区间左端点
     pright = jump_point_list[price_section_index]  # 区间右端点
-    print("在区间[", pleft, ",", pright, "]求最大收益：")
+    print("\n在区间[", pleft, ",", pright, "]求最大收益：")
 
-    revenue_ = 0
+    all_cs_revenue = 0
+    all_cs_pq_expression = 0
     p_ = 0
     fij_ = [[0 for j in range(cs_num)] for i in range(region_num)]
-    lamuda_ = [ 0 for i in range(region_num)]
+    lamuda_ = [0 for i in range(region_num)]
     q_ = [0 for j in range(cs_num)]
 
-    q_expression = q_each_jump_step[price_section_index-1][change_cs]
-    quadratic_expression = q_expression * jp  # p*q的二次函数表示
-    print(q_each_jump_step)
-    print(quadratic_expression)
-    fd = diff(quadratic_expression)  # 求出一阶导数
+
+    for cs in range(config.cs_num):
+        if cs == change_cs:
+            all_cs_pq_expression += (q_each_jump_step[price_section_index - 1][cs]) * (jp - config.cs_cost_vector[cs])
+        else:
+            all_cs_pq_expression += (q_each_jump_step[price_section_index - 1][cs]) * (copy_price[cs] - config.cs_cost_vector[cs])
+    # all_cs_pq_expression = all_cs_q_expression * jp
+
+    # print(all_cs_q_expression)
+    print("所有充电站的收益和表达式：", all_cs_pq_expression)
+    fd = diff(all_cs_pq_expression)  # 求出一阶导数
     dRoots = solveset(fd, jp)  # 一阶导数为0的点
-    list_dRoots = list(dRoots) # 表示成list方便处理
-    print(list_dRoots)
+    list_dRoots = list(dRoots)  # 表示成list方便处理
+    # print(list_dRoots)
 
     if '/' in str(list_dRoots[0]):
         nums_arr = list(regular.findall(r'-?\d+', str(list_dRoots[0])))  # 提取分数中的数字
@@ -554,27 +461,27 @@ def get_max_revenue(dist, region_num, cs_num, priceIndex, vehicle_num, jump_poin
         if list_value > pleft and list_value < pright:  # 如果极值点在区间内
             p_ = list_value
         else:  # 如果极值点不在区间内，带入求两端的值比较大小
-            PQ_left = quadratic_expression.subs(jp, pleft)
-            PQ_right = quadratic_expression.subs(jp, pright)
+            PQ_left = all_cs_pq_expression.subs(jp, pleft)
+            PQ_right = all_cs_pq_expression.subs(jp, pright)
             if PQ_left > PQ_right:
                 p_ = pleft
             elif PQ_right > PQ_left:
                 p_ = pright
-        revenue_ = quadratic_expression.subs(jp, p_)
+        all_cs_revenue = all_cs_pq_expression.subs(jp, p_)
     else:  # 如果不是分数
         int_value = int(list_dRoots[0])
         if int_value > pleft and int_value < pright:  # 如果极值点在区间内
             p_ = int_value
         else:  # 如果极值点不在区间内，带入求两端的值
-            PQ_left = quadratic_expression.subs(jp, pleft)
-            PQ_right = quadratic_expression.subs(jp, pright)
+            PQ_left = all_cs_pq_expression.subs(jp, pleft)
+            PQ_right = all_cs_pq_expression.subs(jp, pright)
             if PQ_left > PQ_right:
                 p_ = pleft
             elif PQ_right > PQ_left:
                 p_ = pright
-        revenue_ = quadratic_expression.subs(jp, p_)
+        all_cs_revenue = all_cs_pq_expression.subs(jp, p_)
 
-    anss = ans_each_jump_step[price_section_index-1]  # 得到fij以及lamuda关于p的线性表示
+    anss = ans_each_jump_step[price_section_index - 1]  # 得到fij以及lamuda关于p的线性表示
     for item in anss.items():
         if 'f' in str(item[0]):
             int_i = int(str(item[0])[1])
@@ -595,61 +502,68 @@ def get_max_revenue(dist, region_num, cs_num, priceIndex, vehicle_num, jump_poin
 
     # 处理q关于p的表示
     q_index = 0
-    for item in q_each_jump_step[price_section_index-1]:
+    for item in q_each_jump_step[price_section_index - 1]:
         q_[q_index] = round(item.subs(jp, p_))
         q_index += 1
-    print("最大收益：", revenue_, "\n最优价格：", p_, "\n最大收益时的fij：",fij_,  "\n最大收益时的Q：", q_)
-    return round(revenue_, 3), round(p_, 3), fij_, lamuda_, q_, q_expression, quadratic_expression
+    print("所有充电站的最大收益和：", all_cs_revenue, "\n最优价格：", p_, "\n最大收益时的fij：", fij_, "\n所有充电站最大收益时的Q：", q_)
+
+    # change_cs的在所有cs充电站收益最大时的收益：
+    now_change_cs_pq_expression = q_each_jump_step[price_section_index - 1][change_cs] * jp
+    now_change_cs_revenue = now_change_cs_pq_expression.subs(jp, p_)
+    return round(all_cs_revenue, 3), round(p_, 3), fij_, lamuda_, q_, round(now_change_cs_revenue, 3), all_cs_pq_expression
 
 
 
-def get_optimal_p(dist, region_num, cs_num, priceIndex, vehicle_num, jump_point_list, change_cs,
-                  ans_each_jump_step, q_each_jump_step, jp, copy_price):
+def get_all_cs_optimal_p(dist, region_num, cs_num, priceIndex, vehicle_num, jump_point_list, change_cs,
+                         ans_each_jump_step, q_each_jump_step, jp, copy_price):
     """
-    :param dist: m*n，距离数组
-    :param region_num: 区域数量
-    :param cs_num: 充电站数量
-    :param priceIndex: 公司控制priceIndex个cs
-    :param vehicle_num: 1*n，n个区域的车辆数
-    :param jump_point_list: 求出的跳跃点list
-    :param change_cs: 求解最优p的充电站索引
-    :param ans_each_jump_step: 每个跳跃点区间，fij，lamuda，q关于p的表示
-    :param q_each_jump_step: 每个跳跃点区间，q关于p的表示f
-    :return:
-        optimal_revenue： 整个[p_origin, p_max]内的最大收益
-        optimal_p：[p_origin, p_max]中最大收益对应的最优定价
-        optimal_fij： 最优定价下的fij配置
-        optimal_lamuda ： 最优定价下的lamuda
-        optimal_q：最优定价下所有q
-        all_revenue_list：[p_origin, p_max]中每个跳跃点区间的最大收益
-        all_p_list：[p_origin, p_max]中每个跳跃点区间的最优定价
-        all_fij_list：[p_origin, p_max]中每个跳跃点区间的最大收益时的fij配置
-        all_lamuda_list：[p_origin, p_max]中每个跳跃点区间的最大收益时的lamuda
-        all_q_list：[p_origin, p_max]中每个跳跃点区间最大收益时的q
+        :param dist: m*n，距离数组
+        :param region_num: 区域数量
+        :param cs_num: 充电站数量
+        :param priceIndex: 公司控制priceIndex个cs
+        :param vehicle_num: 1*n，n个区域的车辆数
+        :param jump_point_list: 求出的跳跃点list
+        :param change_cs: 求解最优p的充电站索引
+        :param ans_each_jump_step: 每个跳跃点区间，fij，lamuda，q关于p的表示
+        :param q_each_jump_step: 每个跳跃点区间，q关于p的表示f
+        :return:
+            optimal_revenue： 整个[p_origin, p_max]内的最大收益
+            optimal_p：[p_origin, p_max]中最大收益对应的最优定价
+            optimal_fij： 最优定价下的fij配置
+            optimal_lamuda ： 最优定价下的lamuda
+            optimal_q：最优定价下所有q
+            all_revenue_list：[p_origin, p_max]中每个跳跃点区间的最大收益
+            all_p_list：[p_origin, p_max]中每个跳跃点区间的最优定价
+            all_fij_list：[p_origin, p_max]中每个跳跃点区间的最大收益时的fij配置
+            all_lamuda_list：[p_origin, p_max]中每个跳跃点区间的最大收益时的lamuda
+            all_q_list：[p_origin, p_max]中每个跳跃点区间最大收益时的q
 
-    """
+        """
 
-    optimal_revenue = 0
-    optimal_p = 0
-    optimal_fij = []
-    optimal_lamuda = []
-    optimal_q = []
+    all_cs_optimal_revenue = 0
+    now_cs_optimal_revenue = 0
+    all_cs_optimal_p = 0
+    all_cs_optimal_fij = []
+    all_cs_optimal_lamuda = []
+    all_cs_optimal_q = []
 
-    all_revenue_list = []
-    all_p_list = []
-    all_fij_list = []
-    all_lamuda_list = []
-    all_q_list= []
-    all_q_expression = []
-    all_pq_expression = []
+    all_cs_revenue_list = []
+    all_cs_p_list = []
+    all_cs_fij_list = []
+    all_cs_lamuda_list = []
+    all_cs_q_list = []
+    now_change_cs_revneue_list = []
+    all_cs_pq_expression_list = []
 
     price_section_index = 1
 
     while price_section_index < len(jump_point_list):
-        revenue_, p_, fij_, lamuda_, q_, q_expression, pq_expression = get_max_revenue(dist, region_num, cs_num, priceIndex, vehicle_num, jump_point_list,
-                    price_section_index,
-                    change_cs, ans_each_jump_step, q_each_jump_step, jp)
-
+        all_cs_revenue, p_, fij_, lamuda_, q_, now_change_cs_revenue, all_cs_pq_expression = get_all_cs_max_revenue(dist, region_num, cs_num,
+                                                                                       priceIndex, vehicle_num,
+                                                                                       jump_point_list,
+                                                                                       price_section_index,
+                                                                                       change_cs, ans_each_jump_step,
+                                                                                       q_each_jump_step, jp, copy_price)
 
         test_price = copy.deepcopy(copy_price)
         test_price[change_cs] = p_
@@ -669,33 +583,43 @@ def get_optimal_p(dist, region_num, cs_num, priceIndex, vehicle_num, jump_point_
             for j in range(cs_num):
                 new_strategy[i][j] = vehicle_num[i] * new_strategy[i][j]
 
-        print("迭代得到的策略为： ", new_strategy)
-        print("数学方法求得的策略为：", fij_)
-
+        if signal:
+            minus = np.array(new_strategy) - np.array(fij_)
+            if np.any(minus-2 <= 0):
+                print("迭代得到的底层策略： ", new_strategy)
+                print("跳跃点方法得到的底层策略：", fij_)
+            else:
+                print("差值过大！存在bug！")
+                print("迭代得到的策略：", new_strategy)
+                print("跳跃点方法求得的策略：", fij_)
+        else:
+            print("跳跃点方法求得的策略：", fij_)
 
         # 记录求解过程中的值
-        all_revenue_list.append(copy.deepcopy(revenue_))
-        all_p_list.append(copy.deepcopy(p_))
-        all_fij_list.append(copy.deepcopy(fij_))
-        all_lamuda_list.append(copy.deepcopy(lamuda_))
-        all_q_list.append(copy.deepcopy(q_))
-        all_q_expression.append(copy.deepcopy(q_expression))
-        all_pq_expression.append(copy.deepcopy(pq_expression))
+        all_cs_revenue_list.append(copy.deepcopy(all_cs_revenue))
+        all_cs_p_list.append(copy.deepcopy(p_))
+        all_cs_fij_list.append(copy.deepcopy(fij_))
+        all_cs_lamuda_list.append(copy.deepcopy(lamuda_))
+        all_cs_q_list.append(copy.deepcopy(q_))
+        now_change_cs_revneue_list.append(copy.deepcopy(now_change_cs_revenue))
+        all_cs_pq_expression_list.append(copy.deepcopy(all_cs_pq_expression))
         price_section_index += 1
         # 取最优的值
-        if optimal_revenue < revenue_:
-            optimal_revenue = revenue_
-            optimal_p = p_
-            optimal_fij = fij_
-            optimal_lamuda = lamuda_
-            optimal_q = q_
+        if all_cs_optimal_revenue < all_cs_revenue:
+            all_cs_optimal_revenue = all_cs_revenue
+            all_cs_optimal_p = p_
+            all_cs_optimal_fij = fij_
+            all_cs_optimal_lamuda = lamuda_
+            all_cs_optimal_q = q_
+            now_cs_optimal_revenue = now_change_cs_revenue
 
-    return optimal_revenue, optimal_p, optimal_fij, optimal_lamuda, optimal_q, all_revenue_list, all_p_list, all_fij_list, all_lamuda_list, all_q_list, all_q_expression, all_pq_expression
+    return all_cs_optimal_revenue, all_cs_optimal_p, all_cs_optimal_fij, all_cs_optimal_lamuda, all_cs_optimal_q, now_cs_optimal_revenue, all_cs_revenue_list, all_cs_p_list, all_cs_fij_list, all_cs_lamuda_list, all_cs_q_list, now_change_cs_revneue_list, all_cs_pq_expression_list
 
 
 
-def get_single_cs_optimal_p(price, cs, region, dist, vehicle_num, minimize_res_list, strategy_vector,  start_flag,
-                 p_max, region_num, cs_num):
+
+def get_single_cs_optimal_p_under_all_cs_max_revenue(price, cs, region, dist, vehicle_num, minimize_res_list, strategy_vector, start_flag,
+                            p_max, region_num, cs_num):
     """
     :param price: 充电站的定价
     :param cs: 需要确定最优价格的充电站索引
@@ -718,6 +642,7 @@ def get_single_cs_optimal_p(price, cs, region, dist, vehicle_num, minimize_res_l
         start_flag： 是否是第一轮迭代的第一个cs
     """
     change_cs = cs  # 当前求解最优p的充电站索引
+    print("\n当前充电站索引：", change_cs)
     copy_price = copy.deepcopy(price)  # 价格的copy，防止运算过程中被修改
     region_num = region_num
     cs_num = cs_num
@@ -738,10 +663,7 @@ def get_single_cs_optimal_p(price, cs, region, dist, vehicle_num, minimize_res_l
     last_min_p_fij_queue = collections.deque()  # 记录上一轮跳跃点变化的fij
     state_dict = {}  # 记录fij的状态, 1:fij>0, 2:fij=0
 
-
-
     print("当前充电站的定价为：", copy_price)
-
 
     if start_flag:  # 如果是第一轮迭代的第一个cs，依靠第三库求解的下层均衡确认fij的情况
         copy_price[change_cs] = 0
@@ -817,50 +739,56 @@ def get_single_cs_optimal_p(price, cs, region, dist, vehicle_num, minimize_res_l
             expr_f = str(i) + str(j)
             if j == change_cs:
                 # expression_dict[expr_f] = (jp + q_symbol_list[j] + dist[j][i] + xij_symbol_list[i][j] * vehicle_num[i]) * vehicle_num[i] - lamuda_symbol_list[i]
-                expression_dict[expr_f] = jp + q_symbol_list[j] + dist[j][i] + fij_symbol_list[i][j] - \
+                expression_dict[expr_f] = (config.weight_price * jp) + (config.weight_queue * q_symbol_list[j]) + (config.weight_dist * dist[j][i]) + (config.weight_queue * fij_symbol_list[i][j]) - \
                                           lamuda_symbol_list[i]
             else:
                 # expression_dict[expr_f] = (copy_price[j] + q_symbol_list[j] + dist[j][i] + xij_symbol_list[i][j] * vehicle_num[i]) * vehicle_num[i] - lamuda_symbol_list[i]
-                expression_dict[expr_f] = copy_price[j] + q_symbol_list[j] + dist[j][i] + fij_symbol_list[i][j] - \
+                expression_dict[expr_f] = (config.weight_price * copy_price[j]) + (config.weight_queue * q_symbol_list[j]) + (config.weight_dist * dist[j][i]) + (config.weight_queue * fij_symbol_list[i][j]) - \
                                           lamuda_symbol_list[i]
             # 将状态全部初始化为1，表示fij>0
             state_dict[fij_symbol_list[i][j]] = 1
 
     # 循环求跳跃点
+
+    print("\n开始求解跳跃点")
     while end_flag:
-        result_p, last_lower_0_flag, last_min_p_queue, last_min_p_fij_queue, expression_dict, p_equal_flag, end_flag, start_flag = get_next_jump_p(
+        result_p, last_lower_0_flag, last_min_p_queue, last_min_p_fij_queue, expression_dict, p_equal_flag, end_flag, start_flag, price_section_index = get_next_jump_p(
             dist, vehicle_num, copy_price, expression_dict, fij_symbol_list, q_symbol_list, lamuda_symbol_list,
             jump_point_list,
             price_section_index, lower_0_flag, last_lower_0_flag, last_min_p_queue, last_min_p_fij_queue,
-            state_dict, p_equal_flag, jp, strategy, change_cs, p_max, ans_each_jump_step, q_each_jump_step, region_num, cs_num, end_flag, start_flag)
+            state_dict, p_equal_flag, jp, strategy, change_cs, p_max, ans_each_jump_step, q_each_jump_step, region_num,
+            cs_num, end_flag, start_flag)
         price_section_index += 1
 
     # 求解每个区间内的最大收益、最优价格p、最大收益下的fij
-    optimal_revenue, optimal_p, optimal_fij, optimal_lamuda, optimal_q, all_revenue_list, all_p_list, all_fij_list, all_lamuda_list, all_q_list, all_q_expression_list, all_pq_expression_list = get_optimal_p(
+    all_cs_optimal_revenue, all_cs_optimal_p, all_cs_optimal_fij, all_cs_optimal_lamuda, all_cs_optimal_q, now_cs_optimal_revenue, all_cs_revenue_list, all_cs_p_list, all_cs_fij_list, all_cs_lamuda_list, all_cs_q_list, now_change_cs_revneue_list, all_cs_pq_expression_list = get_all_cs_optimal_p(
         dist,
-        region_num, cs_num, priceIndex, vehicle_num, jump_point_list, change_cs, ans_each_jump_step, q_each_jump_step, jp, copy_price)
+        region_num, cs_num, priceIndex, vehicle_num, jump_point_list, change_cs, ans_each_jump_step, q_each_jump_step,
+        jp, copy_price)
 
-    print("跳跃点区间：", jump_point_list)
+    print("\n跳跃点区间：", jump_point_list)
 
-    print("每个区间的最大收益列表：", all_revenue_list)
-    print("整体最大收益：", optimal_revenue)
+    print("每个区间的所有充电站最大收益和列表：", all_cs_revenue_list)
+    print("所有充电站整体最大收益和：", all_cs_optimal_revenue)
 
-    print("每个区间的最优价格列表：", all_p_list)
-    print("整体最大收益时的最优价格为：", optimal_p)
+    print("每个区间的最优价格列表：", all_cs_p_list)
+    print("整体最大收益时的最优价格为：", all_cs_optimal_p)
 
-    print("每个区间的fij配置列表：", all_fij_list)
-    print("整体最大收益时的fij配置为：", optimal_fij)
+    print("每个区间的fij配置列表：", all_cs_fij_list)
+    print("整体最大收益时的fij配置为：", all_cs_optimal_fij)
 
-    print("每个区间的lamuda列表：", all_lamuda_list)
-    print("整体最大收益时的lamuda为：", optimal_lamuda)
+    print("每个区间的lamuda列表：", all_cs_lamuda_list)
+    print("整体最大收益时的lamuda为：", all_cs_optimal_lamuda)
 
-    print("每个区间的q列表：", all_q_list)
-    print("整体最大收益时的q为：", optimal_q)
+    print("每个区间的q列表：", all_cs_q_list)
+    print("整体最大收益时的q为：", all_cs_optimal_q)
 
-    print("q的表达式：", all_q_expression_list)
-    print("pq的表达式：", all_pq_expression_list)
+    print("当前变化cs的收益列表：", now_change_cs_revneue_list)
+    print("当前变化cs的最优收益：", now_cs_optimal_revenue)
 
-    return optimal_revenue, optimal_p, optimal_fij, optimal_lamuda, optimal_q, True, start_flag
+    print("pq的表达式：", all_cs_pq_expression_list)
+
+    return all_cs_optimal_revenue, all_cs_optimal_p, all_cs_optimal_fij, all_cs_optimal_lamuda, all_cs_optimal_q, now_cs_optimal_revenue, True, start_flag
 
 
 if __name__ == "__main__":
@@ -870,11 +798,14 @@ if __name__ == "__main__":
     start_flag = True
     p_min = 0
     p_max = 1000
+    max_episode_num = 150
+    successful_flag = True
+
 
     last_cs_optimal_p_list = [-1 for i in range(cs_num)]  # 记录上一轮各充电站的价格
     last_cs_optimal_p_list = np.array(last_cs_optimal_p_list)
     final_revenue_list = [0 for i in range(cs_num)]  # 各个cs最终的收益列表
-    price = [p_max for i in range(cs_num)]
+    price = [1000 for i in range(cs_num)]
     # price = [100, 190, 456, 345, 563, 532, 222, 444, 567, 234]
     list_price = copy.deepcopy(price)
     price = np.array(price)
@@ -893,16 +824,18 @@ if __name__ == "__main__":
         last_cs_optimal_p_list = copy.deepcopy(price)  # 记录上一轮的price价格
         print("第", solve_num, "轮更新开始：")
         for cs in range(config.cs_num):  # 对每个cs，固定其他充电站的价格，求最优价格
-            optimal_revenue, optimal_p, optimal_fij, optimal_lamuda, optimal_q, end_flag, start_flag = get_single_cs_optimal_p(list_price, cs, region, dist, vehicle_num,
-                                                                     minimize_res_list, strategy_vector,
-                                                                     start_flag, p_max, region_num, cs_num)
+            all_cs_optimal_revenue, all_cs_optimal_p, all_cs_optimal_fij, all_cs_optimal_lamuda, all_cs_optimal_q, now_cs_optimal_revenue, end_flag, start_flag = get_single_cs_optimal_p_under_all_cs_max_revenue(
+                list_price, cs, region, dist, vehicle_num,
+                minimize_res_list, strategy_vector,
+                start_flag, p_max, region_num, cs_num)
             start_flag = True
 
             if end_flag:
-                price[cs] = round(optimal_p, 3)
-                final_revenue_list[cs] = optimal_revenue
-                # strategy_vector = optimal_fij
+                price[cs] = round(all_cs_optimal_p, 3)
 
+                # final_revenue_list[cs] = all_cs_optimal_revenue
+                final_revenue_list[cs] = now_cs_optimal_revenue
+                # strategy_vector = optimal_fij
 
                 # 每个cs确定价格后求下层出行之和
 
@@ -924,23 +857,29 @@ if __name__ == "__main__":
                 #
                 # all_cost_list.append(all_cost)
 
-
             list_price = price.tolist()
 
-
         # price = np.array(price, dtype=np.float64)
-
+        if solve_num > max_episode_num:
+            successful_flag = False
+            break
         solve_num += 1
         print("更新后各充电站的价格为: ", price)
-    print("找到均衡啦！")
-    print("最终各充电站定价：%s", price)
-    print("最终各充电站收益：%s", final_revenue_list)
-    print("底层出行之和：", all_cost_list)
+    if successful_flag:
+        print("找到均衡啦！")
+        print("最终各充电站定价：%s", price)
+        print("最终各充电站最大收益和：%s", all_cs_optimal_revenue)
+        print("最终各充电站的收益为：%s", final_revenue_list)
+
+        # print("底层出行之和：", all_cost_list)
+    else:
+        print("迭代", solve_num, "轮，还是没找到均衡！")
 
     end_time = time()
     run_time = end_time - begin_time
 
     print("程序运行时间：", run_time)
+
 
 
 
